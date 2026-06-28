@@ -1,4 +1,3 @@
-node -e "
 const crypto = require('crypto');
 
 // ============================================================
@@ -15,15 +14,7 @@ function createJWT(payload) {
 }
 
 const now = Math.floor(Date.now() / 1000);
-const exp = now + 31536000; // 1 ano
+const exp = now + 31536000;
 
-console.log('# ============================================');
-console.log('# Chaves JWT geradas para o Supabase');
-console.log('# ============================================');
-console.log('');
 console.log('ANON_KEY=' + createJWT({role:'anon',iss:'supabase-self-hosted',iat:now,exp}));
-console.log('');
 console.log('SERVICE_ROLE_KEY=' + createJWT({role:'service_role',iss:'supabase-self-hosted',iat:now,exp}));
-console.log('');
-console.log('# Copie e cole os valores acima no seu .env');
-"
