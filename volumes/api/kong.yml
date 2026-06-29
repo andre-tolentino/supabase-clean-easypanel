@@ -245,6 +245,36 @@ services:
             - admin
             - anon
 
+  ## Storage S3 protocol endpoint — dedicated route without strip_path
+  ## so external S3 clients (rclone, aws-cli) produce valid SigV4 signatures.
+  ## SDK clients use /storage/v1/* normally; external S3 tools use /s3.
+  - name: storage-s3
+    _comment: 'Storage S3: /s3/* -> http://storage:5000/s3/*'
+    url: http://storage:5000/
+    routes:
+      - name: storage-s3
+        strip_path: false
+        paths:
+          - /s3
+    plugins:
+      - name: cors
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
+          replace:
+            headers:
+              - "Authorization: $LUA_AUTH_EXPR"
+      - name: post-function
+        config:
+          access:
+            - |
+              local auth = kong.request.get_header("authorization")
+              if auth == nil or auth == "" or auth:find("^%s*$") then
+                kong.service.request.clear_header("authorization")
+              end
+
   ## Storage API endpoint (with Authorization header transformation).
   ## No key-auth — S3 protocol requests don't carry an apikey header.
   ##
